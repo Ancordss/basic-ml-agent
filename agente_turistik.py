@@ -3,8 +3,12 @@ from pydantic import BaseModel
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier
+import os
+from dotenv import load_dotenv
 
-CSV_PATH = "base_conocimiento.csv"
+# Cargar variables de entorno desde .env
+load_dotenv()
+CSV_PATH = os.getenv("CSV_PATH", "base_conocimiento.csv")
 
 questions = [
     ("transporte", ["caminando","auto","transporte publico","bicicleta","barco"]),
