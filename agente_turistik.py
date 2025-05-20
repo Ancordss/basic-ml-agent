@@ -3,12 +3,8 @@ from pydantic import BaseModel
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier
-import os
-from dotenv import load_dotenv
 
-# Cargar variables de entorno desde .env
-load_dotenv()
-CSV_PATH = os.getenv("CSV_PATH", "base_conocimiento.csv")
+CSV_PATH = "base_conocimiento.csv"
 
 questions = [
     ("transporte", ["caminando","auto","transporte publico","bicicleta","barco"]),
@@ -20,12 +16,12 @@ questions = [
 ]
 
 class UserAnswers(BaseModel):
-    transporte: str
-    gastronomia: str
-    presupuesto: str
-    acompanado: str
-    actividad: str
-    comida: str
+    transporte: str = "caminando"
+    gastronomia: str = "sin restricciones"
+    presupuesto: str = "bajo"
+    acompanado: str = "acompanado"
+    actividad: str = "relajado"
+    comida: str = "si"
 
 def load_and_prepare_data(csv_path):
     df = pd.read_csv(csv_path)
@@ -57,14 +53,19 @@ app = FastAPI()
 
 @app.post("/recomendar_combinado/")
 def recomendar_combinado(respuestas: UserAnswers):
+    # Create a default instance to get default values
+    defaults = UserAnswers()
+    
+    # Use default values if field is empty string or undefined
     user_answers = [
-        respuestas.transporte,
-        respuestas.gastronomia,
-        respuestas.presupuesto,
-        respuestas.acompanado,
-        respuestas.actividad,
-        respuestas.comida
+        respuestas.transporte if respuestas.transporte and respuestas.transporte.strip() else defaults.transporte,
+        respuestas.gastronomia if respuestas.gastronomia and respuestas.gastronomia.strip() else defaults.gastronomia,
+        respuestas.presupuesto if respuestas.presupuesto and respuestas.presupuesto.strip() else defaults.presupuesto,
+        respuestas.acompanado if respuestas.acompanado and respuestas.acompanado.strip() else defaults.acompanado,
+        respuestas.actividad if respuestas.actividad and respuestas.actividad.strip() else defaults.actividad,
+        respuestas.comida if respuestas.comida and respuestas.comida.strip() else defaults.comida
     ]
+    print("User answers with defaults applied:", user_answers)
 
     # Configura aquí los pesos para cada categoría (ajusta según importancia)
     pesos = [1, 1, 3, 3, 1, 1]
